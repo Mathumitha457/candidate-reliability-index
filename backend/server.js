@@ -1,84 +1,90 @@
 const express = require("express");
 const cors = require("cors");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const authRoutes = require("./routes/authRoutes");
+const candidateRoutes = require("./routes/candidateRoutes");
+const User = require("./models/User");
+
+// Load Environment Variables
+dotenv.config();
 
 const app = express();
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-let users = [];
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/candidates", candidateRoutes);
 
-// GET USERS
-app.get("/api/users", (req, res) => {
-res.json(users);
+// Health Check
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", message: "Reliabilix API is running" });
 });
 
-// ADD USER
-app.post("/api/users", (req, res) => {
-const user = {
-_id: Date.now().toString(),
+// Database Seed Helper
+const seedUsers = async () => {
+  try {
+    const userCount = await User.countDocuments();
+    if (userCount === 0) {
+      console.log("No users found in database. Seeding default roles...");
 
-name: req.body.name,
-email: req.body.email,
+      const defaultUsers = [
+        {
+          name: "System Admin",
+          email: "admin@reliabilix.com",
+          password: "admin123",
+          role: "admin",
+          department: "Administration",
+        },
+        {
+          name: "CS Teacher",
+          email: "teacher@reliabilix.com",
+          password: "teacher123",
+          role: "teacher",
+          department: "Computer Science",
+        },
+        {
+          name: "Talent Acquisition HR",
+          email: "hr@reliabilix.com",
+          password: "hr123",
+          role: "hr",
+          department: "Human Resources",
+        },
+      ];
 
-attendance: 0,
-performance: 0,
-internship: 0,
-behaviour: 0,
-
-total: 0,
-
+      for (const u of defaultUsers) {
+        const newUser = new User(u);
+        await newUser.save();
+        console.log(`Seeded user: ${u.email} (${u.role})`);
+      }
+    }
+  } catch (err) {
+    console.error("Error seeding default users:", err);
+  }
 };
 
-users.push(user);
+// Database Connection
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
 
-res.json(user);
-});
-
-// UPDATE SCORE
-app.put("/api/users/:id/score", (req, res) => {
-const { category, change } = req.body;
-
-const user = users.find((u) => u._id === req.params.id);
-
-if (!user) {
-return res.status(404).json({
-error: "User not found",
-});
+if (!MONGO_URI) {
+  console.error("FATAL ERROR: MONGO_URI is not defined in .env file.");
+  process.exit(1);
 }
 
-user[category] += change;
-
-// MIN LIMIT
-if (user[category] < 0) {
-user[category] = 0;
-}
-
-// MAX LIMIT
-if (user[category] > 25) {
-user[category] = 25;
-}
-
-// TOTAL
-user.total =
-user.attendance +
-user.performance +
-user.internship +
-user.behaviour;
-
-res.json(user);
-});
-
-// DELETE USER
-app.delete("/api/users/:id", (req, res) => {
-users = users.filter((u) => u._id !== req.params.id);
-
-res.json({
-message: "Deleted Successfully",
-});
-});
-
-// SERVER
-app.listen(5000, () => {
-console.log("Server running on http://localhost:5000");
-});
+mongoose
+  .connect(MONGO_URI)
+  .then(async () => {
+    console.log("Connected to MongoDB Atlas successfully.");
+    await seedUsers();
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to connect to MongoDB:", err.message);
+    process.exit(1);
+  });
