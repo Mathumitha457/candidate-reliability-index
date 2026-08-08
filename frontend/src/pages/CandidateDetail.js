@@ -7,6 +7,7 @@ import { Radar } from "react-chartjs-2";
 import { FaChevronLeft, FaFilePdf, FaExchangeAlt, FaUser, FaEnvelope, FaIdCard, FaBuilding } from "react-icons/fa";
 import ScoreBar from "../components/ScoreBar";
 import GradeBadge from "../components/GradeBadge";
+import { useAuth } from "../context/AuthContext";
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
@@ -14,7 +15,11 @@ export default function CandidateDetail() {
   const { id } = useParams();
   const [candidate, setCandidate] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { role } = useAuth();
   const navigate = useNavigate();
+
+  const isPdfAllowed = role === "admin" || role === "hr";
+  const isCompareAllowed = role === "admin" || role === "hr";
 
   useEffect(() => {
     axios
@@ -87,8 +92,9 @@ export default function CandidateDetail() {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
-        <p>Loading candidate details...</p>
+      <div className="loading-spinner-container">
+        <div className="spinner"></div>
+        <p style={{ fontWeight: 600 }}>Loading candidate details...</p>
       </div>
     );
   }
@@ -149,12 +155,16 @@ export default function CandidateDetail() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            <button onClick={downloadPDF} className="btn-primary" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
-              <FaFilePdf /> Download PDF Report
-            </button>
-            <button onClick={addToCompare} className="btn-small" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", padding: "0.75rem", background: "white", color: "var(--text-main)", fontWeight: "600" }}>
-              <FaExchangeAlt /> Add to Compare
-            </button>
+            {isPdfAllowed && (
+              <button onClick={downloadPDF} className="btn-primary" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+                <FaFilePdf /> Download PDF Report
+              </button>
+            )}
+            {isCompareAllowed && (
+              <button onClick={addToCompare} className="btn-small" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", padding: "0.75rem", background: "white", color: "var(--text-main)", fontWeight: "600" }}>
+                <FaExchangeAlt /> Add to Compare
+              </button>
+            )}
           </div>
         </div>
 

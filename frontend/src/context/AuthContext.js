@@ -21,6 +21,15 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  // Update dynamic data-role attribute for CSS Variables
+  useEffect(() => {
+    if (user && user.role) {
+      document.documentElement.setAttribute("data-role", user.role);
+    } else {
+      document.documentElement.removeAttribute("data-role");
+    }
+  }, [user]);
+
   // Axios Interceptors Configuration
   useEffect(() => {
     const requestInterceptor = axios.interceptors.request.use(

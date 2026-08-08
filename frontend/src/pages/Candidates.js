@@ -3,7 +3,8 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
-import { FaPlus, FaSearch, FaFilePdf, FaEdit, FaTrash, FaEye, FaExchangeAlt } from "react-icons/fa";
+import { FaPlus, FaFilePdf, FaEdit, FaTrash, FaEye, FaExchangeAlt } from "react-icons/fa";
+import { FiUsers, FiSearch } from "react-icons/fi";
 import ScoreBar from "../components/ScoreBar";
 import GradeBadge from "../components/GradeBadge";
 
@@ -26,7 +27,10 @@ export default function Candidates() {
   const [compareIds, setCompareIds] = useState([]);
   const navigate = useNavigate();
 
+  // Role permissions
   const isWriteAllowed = role === "admin" || role === "teacher";
+  const isCompareAllowed = role === "admin" || role === "hr";
+  const isPdfAllowed = role === "admin" || role === "hr";
 
   const fetchCandidates = () => {
     setLoading(true);
@@ -41,7 +45,6 @@ export default function Candidates() {
       .get("http://localhost:5000/api/candidates", { params })
       .then((res) => {
         setCandidates(res.data);
-        // Extract unique departments for dropdown
         if (res.data) {
           const uniqueDepts = [...new Set(res.data.map((c) => c.department))];
           setDepartments(uniqueDepts);
@@ -50,7 +53,7 @@ export default function Candidates() {
       })
       .catch((err) => {
         console.error("Fetch candidates error:", err);
-        toast.error("Failed to load candidate list.");
+        toast.error("Failed to load candidate directory.");
         setLoading(false);
       });
   };
@@ -60,21 +63,36 @@ export default function Candidates() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [grade, department, sortBy, sortOrder]);
 
+  // Load local compare list
+  useEffect(() => {
+    const stored = localStorage.getItem("reliabilix_compare");
+    if (stored) {
+      try {
+        setCompareIds(JSON.parse(stored));
+      } catch (e) {
+        setCompareIds([]);
+      }
+    }
+  }, []);
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     fetchCandidates();
   };
 
   const handleCompareCheckbox = (id) => {
+    let updatedList;
     if (compareIds.includes(id)) {
-      setCompareIds(compareIds.filter((item) => item !== id));
+      updatedList = compareIds.filter((item) => item !== id);
     } else {
       if (compareIds.length >= 4) {
-        toast.error("You can compare up to 4 candidates at once.");
+        toast.error("Comparison is limited to a maximum of 4 candidates.");
         return;
       }
-      setCompareIds([...compareIds, id]);
+      updatedList = [...compareIds, id];
     }
+    setCompareIds(updatedList);
+    localStorage.setItem("reliabilix_compare", JSON.stringify(updatedList));
   };
 
   const triggerCompare = () => {
@@ -90,7 +108,10 @@ export default function Candidates() {
       try {
         await axios.delete(`http://localhost:5000/api/candidates/${id}`);
         toast.success("Candidate record deleted successfully.");
-        setCompareIds(compareIds.filter((item) => item !== id));
+        // Clear from comparison if it was checked
+        const updatedList = compareIds.filter((item) => item !== id);
+        setCompareIds(updatedList);
+        localStorage.setItem("reliabilix_compare", JSON.stringify(updatedList));
         fetchCandidates();
       } catch (err) {
         console.error("Delete candidate error:", err);
@@ -100,7 +121,7 @@ export default function Candidates() {
   };
 
   const downloadPDF = (id, name) => {
-    const toastId = toast.loading("Generating PDF...");
+    const toastId = toast.loading("Generating PDF report...");
     axios({
       url: `http://localhost:5000/api/candidates/${id}/export-pdf`,
       method: "GET",
@@ -128,21 +149,21 @@ export default function Candidates() {
     <div className="main-content">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
         <div>
-          <h2 style={{ fontSize: "1.75rem", fontWeight: "700" }}>Candidates Directory</h2>
+          <h2 style={{ fontSize: "1.75rem", fontWeight: "800", color: "var(--primary)" }}>Candidates Directory</h2>
           <p style={{ color: "var(--text-muted)", fontSize: "0.95rem" }}>
-            Search, filter, compare, and manage candidate reliability records.
+            Search, filter, and manage student performance and reliability records system-wide.
           </p>
         </div>
 
         <div style={{ display: "flex", gap: "1rem" }}>
-          {compareIds.length >= 2 && (
-            <button onClick={triggerCompare} className="btn-small" style={{ backgroundColor: "var(--secondary)", color: "white", borderColor: "var(--secondary)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          {isCompareAllowed && compareIds.length >= 2 && (
+            <button onClick={triggerCompare} className="btn-small" style={{ backgroundColor: "var(--primary)", color: "white", borderColor: "var(--primary)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <FaExchangeAlt /> Compare Selected ({compareIds.length})
             </button>
           )}
 
           {isWriteAllowed && (
-            <Link to="/candidates/add" className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1.2rem", fontSize: "0.95rem" }}>
+            <Link to="/candidates/add" className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1.2rem", fontSize: "0.95rem", width: "auto" }}>
               <FaPlus /> Add Candidate
             </Link>
           )}
@@ -151,15 +172,17 @@ export default function Candidates() {
 
       {/* Filter Bar */}
       <form onSubmit={handleSearchSubmit} className="filter-bar">
-        <div style={{ display: "flex", flex: 1, gap: "0.5rem" }}>
+        <div style={{ display: "flex", flex: 1, gap: "0.5rem", position: "relative" }}>
           <input
             type="text"
             placeholder="Search by name, email, roll no..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            style={{ paddingLeft: "2.2rem" }}
           />
-          <button type="submit" className="btn-small" style={{ display: "flex", alignItems: "center", padding: "0.6rem", border: "1px solid var(--border)", background: "white", cursor: "pointer" }}>
-            <FaSearch />
+          <FiSearch style={{ position: "absolute", left: "0.8rem", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
+          <button type="submit" className="btn-small" style={{ border: "1px solid var(--border)", background: "white", cursor: "pointer", display: "flex", alignItems: "center" }}>
+            Search
           </button>
         </div>
 
@@ -195,34 +218,39 @@ export default function Candidates() {
       {/* Table List */}
       <div className="table-container">
         {loading ? (
-          <div style={{ padding: "3rem", textAlign: "center", color: "var(--text-muted)" }}>Loading records...</div>
+          <div className="loading-spinner-container">
+            <div className="spinner"></div>
+            <p style={{ fontWeight: 600 }}>Loading Candidate Directory...</p>
+          </div>
         ) : candidates.length > 0 ? (
           <table className="table-candidate">
             <thead>
               <tr>
-                <th style={{ width: "40px" }}>Comp</th>
+                {isCompareAllowed && <th style={{ width: "50px" }}>Select</th>}
                 <th>Roll No</th>
                 <th>Name</th>
                 <th>Department</th>
                 <th>Reliability Score</th>
                 <th>Grade</th>
-                <th>Status</th>
+                <th>Verification</th>
                 <th style={{ textAlign: "center" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {candidates.map((cand) => (
                 <tr key={cand._id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={compareIds.includes(cand._id)}
-                      onChange={() => handleCompareCheckbox(cand._id)}
-                      style={{ cursor: "pointer", width: "16px", height: "16px" }}
-                    />
-                  </td>
+                  {isCompareAllowed && (
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={compareIds.includes(cand._id)}
+                        onChange={() => handleCompareCheckbox(cand._id)}
+                        style={{ cursor: "pointer", width: "16px", height: "16px" }}
+                      />
+                    </td>
+                  )}
                   <td style={{ fontWeight: 600 }}>{cand.rollNumber}</td>
-                  <td>{cand.name}</td>
+                  <td style={{ fontWeight: 550 }}>{cand.name}</td>
                   <td>{cand.department}</td>
                   <td>
                     <ScoreBar score={cand.reliabilityScore} />
@@ -231,7 +259,7 @@ export default function Candidates() {
                     <GradeBadge grade={cand.grade} />
                   </td>
                   <td>
-                    <span style={{ color: cand.verified ? "var(--success)" : "var(--text-muted)", fontWeight: cand.verified ? 600 : 500 }}>
+                    <span style={{ color: cand.verified ? "var(--success)" : "var(--text-muted)", fontWeight: cand.verified ? 600 : 400 }}>
                       {cand.verified ? "Verified" : "Pending"}
                     </span>
                   </td>
@@ -241,9 +269,11 @@ export default function Candidates() {
                         <FaEye />
                       </Link>
 
-                      <button onClick={() => downloadPDF(cand._id, cand.name)} className="btn-icon download" title="Download Report PDF">
-                        <FaFilePdf />
-                      </button>
+                      {isPdfAllowed && (
+                        <button onClick={() => downloadPDF(cand._id, cand.name)} className="btn-icon download" title="Download PDF Report">
+                          <FaFilePdf />
+                        </button>
+                      )}
 
                       {isWriteAllowed && (
                         <>
@@ -262,7 +292,8 @@ export default function Candidates() {
             </tbody>
           </table>
         ) : (
-          <div style={{ padding: "4rem", textAlign: "center", color: "var(--text-muted)" }}>
+          <div className="empty-state">
+            <FiUsers className="empty-state-icon" />
             <h3>No candidates found</h3>
             <p>Try modifying your search query or filters.</p>
           </div>

@@ -63,8 +63,9 @@ export default function ComparePage() {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
-        <p>Loading comparison metrics...</p>
+      <div className="loading-spinner-container">
+        <div className="spinner"></div>
+        <p style={{ fontWeight: 600 }}>Loading comparison metrics...</p>
       </div>
     );
   }
