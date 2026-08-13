@@ -297,13 +297,13 @@ export default function Dashboard() {
                       </td>
                       <td>
                         <div className="action-btn-group">
-                          <Link to={`/candidates/${cand._id}`} className="btn-icon view" title="View Profile">
+                          <Link to={`/candidates/${cand._id}`} className="btn-icon view" title="View">
                             <FiUser />
                           </Link>
-                          <Link to={`/candidates/edit/${cand._id}`} className="btn-icon edit" title="Edit Scores">
+                          <Link to={`/candidates/edit/${cand._id}`} className="btn-icon edit" title="Edit">
                             <FaPlus />
                           </Link>
-                          <button onClick={() => handleDeleteCandidate(cand._id, cand.name)} className="btn-icon delete" title="Delete Record">
+                          <button onClick={() => handleDeleteCandidate(cand._id, cand.name)} className="btn-icon delete" title="Delete">
                             <FaTrash />
                           </button>
                         </div>

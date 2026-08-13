@@ -265,22 +265,22 @@ export default function Candidates() {
                   </td>
                   <td>
                     <div className="action-btn-group">
-                      <Link to={`/candidates/${cand._id}`} className="btn-icon view" title="View Profile">
+                      <Link to={`/candidates/${cand._id}`} className="btn-icon view" title="View">
                         <FaEye />
                       </Link>
 
                       {isPdfAllowed && (
-                        <button onClick={() => downloadPDF(cand._id, cand.name)} className="btn-icon download" title="Download PDF Report">
+                        <button onClick={() => downloadPDF(cand._id, cand.name)} className="btn-icon pdf" title="Download PDF">
                           <FaFilePdf />
                         </button>
                       )}
 
                       {isWriteAllowed && (
                         <>
-                          <Link to={`/candidates/edit/${cand._id}`} className="btn-icon edit" title="Edit Record">
+                          <Link to={`/candidates/edit/${cand._id}`} className="btn-icon edit" title="Edit">
                             <FaEdit />
                           </Link>
-                          <button onClick={() => handleDelete(cand._id, cand.name)} className="btn-icon delete" title="Delete Record">
+                          <button onClick={() => handleDelete(cand._id, cand.name)} className="btn-icon delete" title="Delete">
                             <FaTrash />
                           </button>
                         </>
