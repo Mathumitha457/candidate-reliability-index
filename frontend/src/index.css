@@ -422,12 +422,12 @@ a:hover {
   background-color: var(--primary-light);
 }
 
-/* ===== ACTION BUTTON GROUP ===== */
+/* ===== ACTION BUTTON GROUP (GAP: 8PX) ===== */
 .action-btn-group {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 8px; /* 8px spacing between action buttons */
 }
 
 td button.btn-icon,
