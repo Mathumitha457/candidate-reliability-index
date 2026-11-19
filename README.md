@@ -1,115 +1,161 @@
 # Reliabilix – Candidate Reliability Index
 
-Reliabilix is a professional MERN (MongoDB, Express, React, Node.js) application designed to track, evaluate, and benchmark candidate reliability metrics. The platform implements robust role-based access control (RBAC), interactive data visualizations, automated notifications, and reporting features.
+**Reliabilix** is a MERN stack web application designed to evaluate, track, and compare candidate reliability based on multiple performance metrics. It helps administrators, teachers, and HR teams manage candidate records and make data-driven decisions through interactive dashboards, visual reports, and automated alerts.
 
-## 🚀 Key Features
+## 🚀 Live Demo
 
-*   **Role-Based Access Control (RBAC):**
-    *   `admin`: Full access to the system, including candidate management and dashboard metrics.
-    *   `teacher`: Can add, edit, and delete candidate records that they have uploaded.
-    *   `hr`: View-only access. Can search, filter, export reports, and compare candidates, but cannot add or modify records.
-*   **Interactive Dashboard:** Features a grade distribution doughnut chart, a department-wise average score bar chart, key metric summary cards, and a table showing the top 5 performing candidates.
-*   **Detailed Profile Views:** Interactive radar charts mapping individual metrics (Attendance, Performance, Internship, Behavior) side-by-side with profile cards.
-*   **PDF Report Export:** Generates custom-styled, downloadable PDF reports on demand for any candidate using a backend `pdfkit` service.
-*   **Candidate Comparison Benchmarking:** Select up to 4 candidates to view side-by-side metric sheets and compare them dynamically with multi-dataset radar chart overlays.
-*   **Bulk CSV Uploads:** Allows teachers and admins to import candidate records in bulk using a drag-and-drop CSV parser.
-*   **Low Score Automated Alerts:** Automatically triggers email notifications to system administrators via NodeMailer when a candidate's reliability index drops below 50.
+**Live Project:** https://candidate-reliability-index.vercel.app/
 
----
+**GitHub Repository:** https://github.com/Mathumitha457/candidate-reliability-index
+
+## ✨ Key Features
+
+- **Role-Based Access Control (RBAC):** Provides role-based permissions for Admin, Teacher, and HR users.
+- **Interactive Dashboard:** Displays candidate statistics, grade distribution, department-wise performance, and top-performing candidates.
+- **Candidate Management:** Add, view, edit, search, filter, and delete candidate records based on user permissions.
+- **Detailed Candidate Profiles:** Displays individual candidate information and reliability metrics through interactive charts.
+- **Reliability Score Calculation:** Automatically calculates candidate scores using attendance, performance, internship, and behavior metrics.
+- **Candidate Comparison:** Compare up to four candidates side by side using performance metrics and radar charts.
+- **PDF Report Export:** Generate and download candidate reliability reports in PDF format.
+- **Bulk CSV Upload:** Import multiple candidate records using CSV files.
+- **Automated Low-Score Alerts:** Sends email notifications to administrators when a candidate's reliability score falls below 50.
 
 ## 🛠️ Technology Stack
 
-*   **Backend:** Node.js, Express, MongoDB Atlas, Mongoose, JSON Web Tokens (JWT), `bcryptjs`, `pdfkit` (PDF streaming), `multer` & `csv-parser` (file uploads), `nodemailer` (email alerting).
-*   **Frontend:** React 18, React Router v6, Axios (with authorization interceptors), Chart.js & `react-chartjs-2`, `react-hot-toast` (alerts), `react-icons`.
-*   **Design & Theme:** Inter typography, sticky blurs, CSS variables custom themes.
+| Category | Technologies |
+|---|---|
+| Frontend | React.js, React Router, Axios |
+| Backend | Node.js, Express.js |
+| Database | MongoDB Atlas, Mongoose |
+| Authentication | JWT, bcryptjs |
+| Data Visualization | Chart.js, react-chartjs-2 |
+| PDF Generation | PDFKit |
+| File Upload | Multer, csv-parser |
+| Email Notifications | Nodemailer |
+| UI & Styling | CSS, React Icons, React Hot Toast |
+| Deployment | Vercel (Frontend), Render (Backend) |
 
----
+## 📊 Reliability Score Calculation
 
-## 📊 Reliability Score Formula
+The reliability score is calculated using four important parameters:
 
-The reliability score and candidate grade are calculated automatically upon saving a candidate:
+- Attendance – 25%
+- Performance – 35%
+- Internship – 20%
+- Behavior – 20%
 
-$$\text{Reliability Score} = \text{round}(\text{Attendance} \times 0.25 + \text{Performance} \times 0.35 + \text{Internship} \times 0.20 + \text{Behavior} \times 0.20)$$
+**Formula:**
 
-### 📈 Grade Classifications
-*   **Excellent:** $\ge 85$
-*   **Good:** $\ge 70$
-*   **Average:** $\ge 50$
-*   **Poor:** $< 50$ (triggers automatic admin email alerts)
+```text
+Reliability Score =
+(Attendance × 0.25) +
+(Performance × 0.35) +
+(Internship × 0.20) +
+(Behavior × 0.20)
+```
 
----
+### Grade Classification
+
+| Score | Grade |
+|---|---|
+| 85 and above | Excellent |
+| 70–84 | Good |
+| 50–69 | Average |
+| Below 50 | Poor |
+
+A score below 50 triggers an automated email alert to the administrator.
 
 ## ⚙️ Project Setup
 
-### 1. Prerequisites
-*   Node.js (v18 or higher)
-*   MongoDB Atlas database instance
+### Prerequisites
 
-### 2. Environment Variables Configuration
-Create a `.env` file in the `backend/` directory:
+- Node.js (v18 or higher)
+- MongoDB Atlas account
+- Git
+- Visual Studio Code
 
-```env
-PORT=5000
-MONGO_URI=mongodb+srv://<username>:<password>@cluster0.example.mongodb.net/reliabilix
-JWT_SECRET=supersecretkey_reliabilix_12345
-SMTP_HOST=smtp.ethereal.email
-SMTP_PORT=587
-SMTP_USER=your_smtp_user
-SMTP_PASS=your_smtp_password
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Mathumitha457/candidate-reliability-index.git
 ```
 
-### 3. Installation & Run Commands
+```bash
+cd candidate-reliability-index
+```
 
-**Set Up & Start Backend:**
+### 2. Backend Setup
+
 ```bash
 cd backend
 npm install
-npm start
-# or npm run dev for nodemon development mode
 ```
 
-**Set Up & Start Frontend:**
+Create a `.env` file inside the backend folder:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_atlas_connection_string
+JWT_SECRET=your_secure_jwt_secret
+SMTP_HOST=your_smtp_host
+SMTP_PORT=587
+SMTP_USER=your_smtp_username
+SMTP_PASS=your_smtp_password
+```
+
+Start the backend:
+
 ```bash
-cd ../frontend
-npm install
 npm start
 ```
-The application will open on `http://localhost:3000`.
+
+### 3. Frontend Setup
+
+Open another terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend will run at the local development URL displayed in the terminal (usually `http://localhost:5173`).
+
+## 🔌 API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register a user |
+| POST | `/api/auth/login` | Authenticate a user |
+| GET | `/api/auth/me` | Get logged-in user details |
+| GET | `/api/candidates` | Retrieve candidate records |
+| GET | `/api/candidates/stats` | Get dashboard statistics |
+| GET | `/api/candidates/compare` | Compare selected candidates |
+| GET | `/api/candidates/:id` | Get candidate details |
+| POST | `/api/candidates` | Add a candidate |
+| PUT | `/api/candidates/:id` | Update candidate details |
+| DELETE | `/api/candidates/:id` | Delete a candidate |
+| POST | `/api/candidates/bulk-upload` | Upload candidates using CSV |
+| GET | `/api/candidates/:id/export-pdf` | Export candidate PDF report |
+
+**Authentication:** Protected API routes require a valid JWT token.
+
+## ☁️ Deployment
+
+- **Frontend:** Deployed using Vercel.
+- **Backend:** Deployed using Render.
+- **Database:** Hosted on MongoDB Atlas.
+
+The deployed frontend communicates with the production backend API.
+
+## 👩‍💻 Author
+
+**Mathumitha S**
+
+B.E. Computer Science and Engineering
+
+GitHub: https://github.com/Mathumitha457
 
 ---
 
-## 🔑 Demo Access Accounts
-
-For evaluation purposes, the database is automatically seeded on the first startup with the following accounts:
-
-| Role | Email | Password | Department |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@reliabilix.com` | `admin123` | Administration |
-| **Teacher** | `teacher@reliabilix.com` | `teacher123` | Computer Science |
-| **HR** | `hr@reliabilix.com` | `hr123` | Human Resources |
-
----
-
-## 🔌 API Reference Table
-
-All candidate management routes require a valid JSON Web Token loaded in the `Authorization: Bearer <JWT>` request header.
-
-| Method | Endpoint | Description | Auth Required | Permitted Roles |
-| :--- | :--- | :--- | :--- | :--- |
-| **POST** | `/api/auth/register` | Register a new user account | No | Public |
-| **POST** | `/api/auth/login` | Login user & retrieve JWT token | No | Public |
-| **GET** | `/api/auth/me` | Fetch authenticated user details | Yes | All roles |
-| **GET** | `/api/candidates` | Retrieve candidate list (search + filter) | Yes | All roles (Teacher: own only) |
-| **GET** | `/api/candidates/stats` | Fetch aggregated dashboard analytics | Yes | All roles (Teacher: own only) |
-| **GET** | `/api/candidates/compare` | Compare candidate scores side-by-side | Yes | All roles |
-| **GET** | `/api/candidates/:id` | Fetch single candidate details | Yes | All roles (Teacher: own only) |
-| **POST** | `/api/candidates` | Register a new candidate manually | Yes | `teacher`, `admin` |
-| **PUT** | `/api/candidates/:id` | Update candidate parameters | Yes | `teacher`, `admin` (Teacher: own only) |
-| **DELETE** | `/api/candidates/:id` | Delete candidate record | Yes | `teacher`, `admin` (Teacher: own only) |
-| **POST** | `/api/candidates/bulk-upload` | Import batch candidates via CSV file | Yes | `teacher`, `admin` |
-| **GET** | `/api/candidates/:id/export-pdf` | Download formatted reliability PDF report | Yes | All roles (Teacher: own only) |
-
----
-
-## 👤 Author
-Developed and maintained by **Mathumitha** (GitHub: [@Mathumitha457](https://github.com/Mathumitha457)).
+⭐ If you find this project interesting, feel free to explore the repository and live demo.
